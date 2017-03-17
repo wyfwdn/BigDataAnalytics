@@ -1,0 +1,70 @@
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>A Map of Information</title>
+    <link href="http://google-developers.appspot.com/maps/documentation/javascript/examples/default.css" rel="stylesheet">
+
+    <!-- If you are in China, you may need to use theis site for the Google Maps code
+    <script src="http://maps.google.cn/maps/api/js" type="text/javascript"></script> -->
+    <script src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+
+    <script src="http://google-maps-utility-library-v3.googlecode.com/svn/trunk/markerclusterer/src/markerclusterer_compiled.js"></script>
+    <script src="where.js"></script>
+    <script>
+
+      function initialize() {
+        alert("Here are the centers that have been clustered.");
+        var myLatlng = new google.maps.LatLng(40.806514, -73.963702)
+        var mapOptions = {
+          zoom: 11,
+          center: myLatlng,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        }
+        var map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+
+		//color
+		var pinColor = "4DA6FA"; //blue
+    	var pinImageBlue = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor,
+        	new google.maps.Size(21, 34),
+        	new google.maps.Point(0,0),
+        	new google.maps.Point(10, 34));
+        
+		var pinColor = "FE7569"; //red
+    	var pinImageRed = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor,
+        	new google.maps.Size(21, 34),
+        	new google.maps.Point(0,0),
+        	new google.maps.Point(10, 34));        
+        
+        i = 0;
+        var markers = [];
+        for ( pos in myData ) {
+            i = i + 1;
+            var row = myData[pos];
+		    window.console && console.log(row);
+            // if ( i < 3 ) { alert(row); }
+            var newLatlng = new google.maps.LatLng(row[0], row[1]);
+            var marker = new google.maps.Marker({
+                position: newLatlng,
+                map: map,
+                icon: pinImageRed,
+                title: row[2]
+            });
+            markers.push(marker);
+        }
+      }
+    </script>
+  </head>
+  <body onload="initialize()">
+<div id="map_canvas" style="height: 500px"></div>
+<p><b>Moter Collision Centers With High Possibility of Collision:</b></p>
+<p>
+Please check clustered centers in the map.
+</p>
+<pre>
+<script>
+document.writeln('Year: ',year,' ,Borough: ',borough,' ,Accidents type: ',type,', Total records: ',totalRecords,', Number of Centers: ',numCenters);
+</script>
+</pre>
+</body>
+</html>

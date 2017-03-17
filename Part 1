@@ -1,0 +1,138 @@
+Part 1: Statistcs Result From Hive Processing
+（Environment：Hadoop、 Hive）
+Hive database initialization.
+cd /usr/local/Cellar/hive/2.1.0/bin 
+schematool -initSchema -dbType derby
+
+
+Create table according to our datasets.
+hive> CREATE TABLE project2(
+Year INT,
+CrashDescriptor String,
+Time String,
+CrashDate DATE,
+DayofWeek String,
+PoliceReport String,
+LightingConditions String,
+Municipality String,
+CollisionTypeDescriptor String,
+CountyName String,RoadDescriptor string,
+WeatherConditions string,
+TrafficControlDevice string,
+RoadSurfaceConditions String,
+DOTRefMarkerLocation string,
+PedestrianBicyclistAction string,
+EventDescriptor String,
+NumofVehiclesInvolved INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' 
+LOCATION "/tmp/hive/wyfwdn/project";
+SHOW TABLES;
+DESCRIBE project2;
+
+
+Load datasets into hive via Hadoop.
+cd /usr/local/Cellar/Hadoop/2.7.3/libexec
+hstart
+Hadoop fs –mkdir /tmp/hive/wyfwdn/project
+Hadoop fs –put ~/desktop/project.txt /tmp
+cd /usr/local/Cellar/hive/2.1.0/bin
+hive
+hive> LOAD DATA INPATH '/tmp/project.txt' INTO TABLE project2;
+hive> SELECT * FROM project2 LIMIT 10;
+
+
+Queries to analyze data.
+1.	Location with the highest possibility to have a collision 
+1)	SELECT countyname, count(*) AS sum 
+FROM project2 
+GROUP BY countyname 
+HAVING count(*) > 10000 
+ORDER BY sum DESC;
+%发生事故次数大于一万的县名（county）及其事故次数。排序按由高到低，下同%
+
+
+
+2)	SELECT Municipality, count(*) AS sum 
+FROM project2 
+GROUP BY Municipality 
+HAVING count(*) > 10000 
+ORDER BY sum DESC;
+%发生事故次数大于一万的城市名（town）及其事故次数%
+
+
+
+2.	the time when it is easy to have a collision 
+SELECT time, count(*) AS sum 
+FROM project2 
+GROUP BY time 
+HAVING sum>5000
+ORDER BY sum DESC;
+%发生事故次数大于5000的时间（mm ss）及其事故发生次数。可能由于有很大一部分事故的发生时间不准确，警方在录入数据时只粗略使用整点或半点时间，才导致如下结果%
+
+
+3.	Reasons/factors for the collision 
+1)	SELECT LightingConditions, count(*) AS sum 
+FROM project2 
+GROUP BY LightingConditions 
+ORDER BY sum DESC;
+%发生事故的光照情况 %
+
+2)	SELECT RoadDescriptor, count(*) AS sum 
+FROM project2 
+GROUP BY RoadDescriptor 
+ORDER BY sum DESC;
+%发生事故的道路形状 %
+
+
+3)	SELECT WeatherConditions, count(*) AS sum 
+FROM project2 
+GROUP BY WeatherConditions 
+ORDER BY sum DESC;
+%发生事故的天气情况 %
+
+
+4)	SELECT TrafficControlDevice, count(*) AS sum 
+FROM project2 
+GROUP BY TrafficControlDevice 
+ORDER BY sum DESC;
+%事故地点存在的交通控制设备%
+
+
+5)	SELECT RoadSurfaceConditions, count(*) AS sum 
+FROM project2 
+GROUP BY RoadSurfaceConditions 
+ORDER BY sum DESC;
+%发生事故的路面条件%
+
+
+以上五点因素得到的结果直接看数字其实意义不大，在最后的report里需要对实际情况进行加权处理才会更能说明问题，比如天气情况中，晴天发生的事故是雨天的事故次数的6倍，然而查一下这五年来纽约的晴雨天数比应该是大于6的，这样才能说明雨天事故更容易发生。
+4.	Event description / Collisions type
+SELECT EventDescriptor,  count(*) AS sum 
+FROM project2 
+GROUP BY EventDescriptor
+ORDER BY sum DESC;
+
+
+5.	Pedestrian and bicyclist action
+SELECT PedestrianBicyclistAction,  count(*) AS sum 
+FROM project2 
+GROUP BY PedestrianBicyclistAction
+ORDER BY sum DESC;
+%这里是行人与非机动车相关事故的部分%
+
+
+6.	Number of vehicles involved
+SELECT NumofVehiclesInvolved,  count(*) AS sum 
+FROM project2 
+GROUP BY NumofVehiclesInvolved
+ORDER BY sum DESC;
+
+7.	The outcome of the collisions
+SELECT CrashDescriptor,  count(*) AS sum 
+FROM project2 
+GROUP BY CrashDescriptor
+ORDER BY sum DESC;
+
+
+
+
